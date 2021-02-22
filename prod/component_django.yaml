@@ -1,0 +1,90 @@
+###########################
+# Deployment
+###########################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: django
+  template:
+    metadata:
+      labels:
+        component: django
+    spec:
+      containers:
+        - name: django-container
+          image: mausamgaurav/django_dev_image:latest
+          ports:
+            - containerPort: 8000
+          command: ["bash", "-c", "gunicorn mainapp.wsgi:application --bind 0.0.0.0:8000"]
+          env:
+            - name: DJANGO_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DJANGO_ENV
+            - name: SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: SECRET_KEY
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DEBUG
+            - name: DJANGO_ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DJANGO_ALLOWED_HOSTS
+            - name: DB_ENGINE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DB_ENGINE
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DB_DATABASE
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DB_PASSWORD
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DB_HOST 
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-variables
+                  key: DB_PORT                    
+
+---
+###########################
+# Cluster IP Service
+###########################
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: django
+  ports:
+    - port: 8000
+      targetPort: 8000

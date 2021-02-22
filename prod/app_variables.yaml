@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-variables
+data:
+  #env variables for the postgres component
+  POSTGRES_USER: postgres_user
+  POSTGRES_DB: predictiondb
+
+  #env variables for the backend component
+  DJANGO_ENV: development
+  DEBUG: "1"
+  SECRET_KEY: secretsecretsecretsecretsecret
+  DJANGO_ALLOWED_HOSTS: "*"
+  DJANGO_ADMIN_USER: admin
+  DJANGO_ADMIN_EMAIL: "admin@example.com"
+
+  DATABASE: postgres
+  DB_ENGINE: "django.db.backends.postgresql"
+  DB_DATABASE: predictiondb
+  DB_USER: postgres_user
+  DB_HOST: postgres-cluster-ip-service
+  DB_PORT: "5432"

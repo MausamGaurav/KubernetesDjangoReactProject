@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-service
+  annotations:
+    kubernetes.io/ingress.class: 'nginx'
+spec:
+  rules:
+    - http:
+        paths:
+          ################
+          # URL ROUTING #
+          ################
+          - path: /admin
+            backend:
+              serviceName: django-cluster-ip-service
+              servicePort: 8000
+          - path: /api
+            backend:
+              serviceName: django-cluster-ip-service
+              servicePort: 8000
+          ##########################
+          # STATIC FOLDER ROUTING #
+          ##########################
+          - path: /static/admin/
+            backend:
+              serviceName: django-cluster-ip-service
+              servicePort: 8000
+          - path: /static/rest_framework/
+            backend:
+              serviceName: django-cluster-ip-service
+              servicePort: 8000
+          - path: /static/
+            backend:
+              serviceName: react-cluster-ip-service
+              servicePort: 3000
+          - path: /media/
+            backend:
+              serviceName: react-cluster-ip-service
+              servicePort: 3000
+          ################
+          # URL ROUTING #
+          ################
+          - path: /
+            backend:
+              serviceName: react-cluster-ip-service
+              servicePort: 3000
+          

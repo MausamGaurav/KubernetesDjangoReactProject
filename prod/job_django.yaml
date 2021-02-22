@@ -1,0 +1,119 @@
+###########################
+# Persistent Volume
+###########################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-assets-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual2
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data/static_assets_data"
+  persistentVolumeReclaimPolicy: Retain
+---
+###########################
+# Persistent Volume Claim
+###########################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: static-assets-volume-claim
+spec:
+  storageClassName: manual2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M
+---
+###########################
+# Job
+###########################
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-job
+spec:
+  template:
+    spec:
+      volumes:
+      - name: django-static-data
+        persistentVolumeClaim:
+          claimName: static-assets-volume-claim
+      containers:
+      - name: django-job-container
+        image: mausamgaurav/django_dev_image:latest
+        volumeMounts:
+          - name: django-static-data
+            mountPath: /usr/src/app/static
+            subPath: django_files
+        command: ["bash", "-c", "/usr/src/app/entrypoint.sh"]
+        env:
+          - name: DJANGO_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DJANGO_ENV
+          - name: SECRET_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: SECRET_KEY
+          - name: DEBUG
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DEBUG
+          - name: DJANGO_ALLOWED_HOSTS
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DJANGO_ALLOWED_HOSTS
+          - name: DB_ENGINE
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DB_ENGINE
+          - name: DB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DB_DATABASE
+          - name: DB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DB_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secrets
+                key: DB_PASSWORD
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DB_HOST 
+          - name: DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DB_PORT
+          - name: DJANGO_ADMIN_USER
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: DJANGO_ADMIN_USER
+          - name: DJANGO_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secrets
+                key: DJANGO_ADMIN_PASSWORD                
+      restartPolicy: Never
+  backoffLimit: 4

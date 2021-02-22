@@ -1,0 +1,100 @@
+###########################
+# Persistent Volume
+###########################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data/postgres_data"
+  persistentVolumeReclaimPolicy: Retain
+---
+###########################
+# Persistent Volume Claim
+###########################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-persistent-volume-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M
+---
+###########################
+# StatefulSet
+###########################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-statefulset
+spec:
+  selector:
+    matchLabels:
+      component: postgres # has to match .spec.template.metadata.labels
+  serviceName: "postgres-cluster-ip-service"
+  replicas: 1 # should not be more than 1 for our postgres volume requirement, because between statelfulset replicas, volume is not shared 
+  template:
+    metadata:
+      labels:
+        component: postgres # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-persistent-volume-claim
+      containers:
+      - name: postgres-container
+        image: postgres
+        ports:
+        - containerPort: 5432
+          name: postgres-port
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+        env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secrets
+                key: POSTGRES_PASSWORD
+          - name: POSTGRES_USER
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: POSTGRES_USER
+          - name: POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: app-variables
+                key: POSTGRES_DB
+---
+###########################
+# Headless Cluster IP Service
+###########################
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-cluster-ip-service
+  labels:
+    component: postgres
+spec:
+  clusterIP: None
+  selector:
+    component: postgres
+  ports:
+    - port: 5432
+      name: postgres-port

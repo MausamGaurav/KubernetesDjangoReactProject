@@ -1,0 +1,39 @@
+###########################
+# Deployment
+###########################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: react
+  template:
+    metadata:
+      labels:
+        component: react
+    spec:
+      containers:
+        - name: react-container
+          image: mausamgaurav/react_dev_image:latest
+          ports:
+            - containerPort: 3000
+          command: ["sh", "-c", "serve -s build -l 3000 --no-clipboard"]       
+
+---
+###########################
+# Cluster IP Service
+###########################
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: react
+  ports:
+    - port: 3000
+      targetPort: 3000
