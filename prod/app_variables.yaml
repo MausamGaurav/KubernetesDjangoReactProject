@@ -8,8 +8,8 @@ data:
   POSTGRES_DB: predictiondb
 
   #env variables for the backend component
-  DJANGO_ENV: development
-  DEBUG: "1"
+  DJANGO_ENV: production
+  DEBUG: "0"
   SECRET_KEY: secretsecretsecretsecretsecret
   DJANGO_ALLOWED_HOSTS: "*"
   DJANGO_ADMIN_USER: admin
