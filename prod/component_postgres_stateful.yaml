@@ -51,6 +51,8 @@ spec:
         component: postgres # has to match .spec.selector.matchLabels
     spec:
       terminationGracePeriodSeconds: 10
+      securityContext:
+        fsGroup: 0
       volumes:
         - name: postgres-data
           persistentVolumeClaim:

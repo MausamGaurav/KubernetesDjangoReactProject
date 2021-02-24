@@ -49,6 +49,8 @@ spec:
       labels:
         component: postgres
     spec:
+      securityContext:
+        fsGroup: 0
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
