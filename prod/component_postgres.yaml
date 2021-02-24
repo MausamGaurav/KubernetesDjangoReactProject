@@ -8,12 +8,12 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  storageClassName: local-storage
   capacity:
     storage: 100M
   accessModes:
     - ReadWriteOnce
-  hostPath:
+  local:
     path: "/mnt/data/postgres_data"
   persistentVolumeReclaimPolicy: Retain
 ---
@@ -25,7 +25,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgres-persistent-volume-claim
 spec:
-  storageClassName: manual
+  storageClassName: local-storage
   accessModes:
     - ReadWriteOnce
   resources:
@@ -49,8 +49,6 @@ spec:
       labels:
         component: postgres
     spec:
-      securityContext:
-        fsGroup: 0
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
