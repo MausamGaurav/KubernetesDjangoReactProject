@@ -14,7 +14,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data/static_assets_data"
+    path: "/var/lib/data/static_assets_data"
   persistentVolumeReclaimPolicy: Retain
 ---
 ###########################
